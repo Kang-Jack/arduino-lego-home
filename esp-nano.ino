@@ -1,0 +1,41 @@
+#include <SoftwareSerial.h>
+SoftwareSerial softSerial(8, 9); // RX, TX
+
+void setup() 
+{
+  uint32_t baud = 9600;
+  Serial.begin(baud);
+  softSerial.begin(baud);
+  Serial.print("SETUP!! @");
+  Serial.println(baud);
+}
+
+void loop() 
+{
+    listen_esp();
+    talk_esp();
+
+}
+
+void listen_esp()
+{
+    while(softSerial.available() > 0) 
+    {
+      char a = softSerial.read();
+      if(a == '\0')
+        continue;
+      if(a != '\r' && a != '\n' && (a < 32))
+        continue;
+      Serial.print(a);
+    }
+}
+
+void talk_esp()
+{
+    while(Serial.available() > 0)
+    {
+      char a = Serial.read();
+      Serial.write(a);
+      softSerial.write(a);
+    }
+ }
