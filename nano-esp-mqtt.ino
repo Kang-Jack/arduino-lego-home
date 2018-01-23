@@ -1,4 +1,4 @@
-char* mqtt_name = "LegoSensor"; //MQTT device name
+char* mqtt_name = "LegoNanoSensor"; //MQTT device name
 char* mqtt_topic = "lego"; //MQTT topic for communication
 char* mqtt_ending = "/data"; //MQTT subsection for communication
 char* mqtt_sub = "home/command/lego/nano";
@@ -15,10 +15,10 @@ char* mqtt_subtopic = "/data"; //MQTT topic for communication
 char* mqtt_maintopic = mqtt_topic;
 
 IPAddress server(192,168,31,143);
-char ssid[] = "dlink624";           // your network SSID (name)
-char pass[] = "123345";           // your network password
+char ssid[] = "Xiaomi_Kang_2_4G";           // your network SSID (name)
+char pass[] = "1064928409";           // your network password
 int status = WL_IDLE_STATUS;   // the Wifi radio's status
-
+int iprint = 0;
 // Initialize the Ethernet client object
 WiFiEspClient espClient;
 
@@ -84,11 +84,14 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void loop() {
-  if (WiFi.status() != WL_CONNECTED) startWiFi();
+  status= WiFi.status();
+  if (status != WL_CONNECTED) iprint=1;
+  if (iprint==1)Serial.println(status);
+  if (status == WL_CONNECTED & iprint==1) iprint = 0 ;
   // put your main code here, to run repeatedly:
   if (!client.connected()) reconnect();
   client.loop();
-  delay(500);
+  delay(200);
 }
 
 void reconnect() {
@@ -99,9 +102,9 @@ void reconnect() {
     if (client.connect(mqtt_name)) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish(mqtt_topic,"hello world");
+      client.publish(mqtt_maintopic,"hello-world");
       // ... and resubscribe
-      client.subscribe(mqtt_sub);
+      client.subscribe("nano");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
