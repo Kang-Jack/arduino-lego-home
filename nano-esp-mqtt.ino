@@ -15,8 +15,8 @@ char* mqtt_subtopic = "/data"; //MQTT topic for communication
 char* mqtt_maintopic = mqtt_topic;
 
 IPAddress server(192,168,31,143);
-char ssid[] = "Xiaomi_Kang_2_4G";           // your network SSID (name)
-char pass[] = "1064928409";           // your network password
+char ssid[] = "dlink624";           // your network SSID (name)
+char pass[] = "xxxx";           // your network password
 int status = WL_IDLE_STATUS;   // the Wifi radio's status
 int iprint = 0;
 // Initialize the Ethernet client object
