@@ -13,11 +13,9 @@ int delayTime = 2000; //ONLY FOR LOW POWER - how long motion detected should be 
 #include <PubSubClient.h>
 WiFiClient mainESP;
 PubSubClient MQTT(mainESP);
-//long lastMsg = 0;
+
 const int max_length=100;
 char msg[max_length];
-//int value = 0;
-//int pir = 1;
 
 char* mqtt_subtopic = "/answer/data"; //MQTT topic for communication
 char* mqtt_maintopic = mqtt_topic;
@@ -37,6 +35,7 @@ void listen()
       
       i++;
     }
+    if (i==0) return;
     set_end_mark(i);
     String msgString((char*)msg);
     if (msgString == "received") msg[0]= '\0';
@@ -82,9 +81,7 @@ void loop() {
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  //Serial.print("Message arrived [");
   //Serial.print(topic);
-  //Serial.print("] ");
   int i=0;
   for(i=0; i<length; i++) {
       if (i<max_length) msg[i] = (char)payload[i];
@@ -102,7 +99,7 @@ void reconnect() {
   while (!MQTT.connected()) {
     Serial.print("Attempting MQTT connection...");
     if (MQTT.connect(mqtt_name)) {
-      //Serial.println("connected");
+      Serial.println("connected MQTT");
       // Once connected, publish an announcement...
       MQTT.publish(mqtt_maintopic,"hello-ESP1s");
       // ... and resubscribe
