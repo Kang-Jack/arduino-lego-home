@@ -38,11 +38,51 @@ void listen()
     if (i==0) return;
     set_end_mark(i);
     String msgString((char*)msg);
+//    if (msg[0]== '[')
+//    {
+//      set_config(&msgString);
+//      msg[0]= '\0';
+//      return;
+//    }
     if (msgString == "received") msg[0]= '\0';
-    else publishMsg((char*)msg);
+    else publish_msg((char*)msg);
 }
-
-void publishMsg(char* msg_str)
+//void set_config(char*){
+//  char* str_out="";
+//  if(msg_str.startsWith("[ssid]"))
+//  {
+//     str_out = msg_str.substring(6);
+//     ssid = str_out;
+//  }
+//  else if(msg_str.startsWith("[psw]"))
+//  {
+//    str_out = msg_str.substring(5);
+//    password = str_out;
+//  }
+//  else if(msg_str.startsWith("[m_s]"))
+//  {
+//    str_out = msg_str.substring(5);
+//    mqtt_server = str_out;
+//  }
+//  else if(msg_str.startsWith("[m_n]"))
+//  {
+//    str_out = msg_str.substring(5);
+//     mqtt_name = str_out;
+//  }
+//  else if(msg_str.startsWith("[m_t]"))
+//  {
+//    str_out = msg_str.substring(5);
+//    mqtt_topic = str_out;
+//  }
+//  else if(msg_str.startsWith("[m_sub]"))
+//  {
+//    str_out = msg_str.substring(7);
+//    mqtt_sub = str_out;
+//  }
+//  Serial.print("settings changed");
+//  Serial.print(mqtt_sub);
+//}
+void publish_msg(char* msg_str)
 {
     if ( WiFi.status() != WL_CONNECTED) startWiFi();
     if (!MQTT.connected()) reconnect();
