@@ -1,6 +1,6 @@
 char* ssid = "xxx"; //Wi-Fi AP Name
 char* password = "xxx"; //Wi-Fi Password
-char* mqtt_server = "192.168.xxx.xxx"; //MQTT Server IP
+char* mqtt_server = "192.168.xx.xx"; //MQTT Server IP
 char* mqtt_name = "ESPSensor"; //MQTT device name
 char* mqtt_topic = "esp/answer" ;//"esp1s"; //MQTT topic for communication
 
@@ -58,13 +58,13 @@ void loop() {
 
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print(topic);
+  //Serial.print(topic);
   int i=0;
   for(i=0; i<length; i++) {
       if (i<max_length) msg[i] = (char)payload[i];
   }
   set_end_mark(i);
-  Serial.println();
+  //Serial.println();
 }
 
 void set_end_mark(int i){
@@ -78,15 +78,15 @@ void reconnect() {
     Serial.print("Attempting MQTT connection...");
     if (MQTT.connect(mqtt_name)) {
       Serial.println("connected MQTT");
-      Serial.println(mqtt_maintopic);
-      Serial.println(mqtt_sub);
+      //Serial.println(mqtt_maintopic);
+      //Serial.println(mqtt_sub);
       // Once connected, publish an announcement...
       MQTT.publish(mqtt_maintopic,"hello-ESP1s");
       // ... and resubscribe
       MQTT.subscribe(mqtt_sub);
     } else {
-      Serial.print("failed, rc=");
-      Serial.println(MQTT.state());
+      //Serial.print("failed, rc=");
+      //Serial.println(MQTT.state());
       Serial.println(" try again in 5 seconds");
       for (int i = 0; i < 5000; i++) {
         delay(1);
@@ -104,7 +104,7 @@ void startWiFi() {
     ESP.restart();
   }
   WiFi.hostname(mqtt_name);
-  Serial.println("Ready");
+  //Serial.println("Ready");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   MQTT.setServer(mqtt_server, 1883);
@@ -129,16 +129,10 @@ void listen_master()
     if (i==0) return;
     set_end_mark(i);
     String msgString((char*)msg);
-    if (msgString == "received") 
-    {
-      msg[0]= '\0';
-      Serial.println("ok received");
-    }
+    if (msgString == "received")  msg[0]= '\0';
     else {
       publish_msg((char*)msg);
       msg[0]= '\0';
-      Serial.println();
-      Serial.println(msgString);
     }
 }
 
