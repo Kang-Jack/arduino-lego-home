@@ -33,10 +33,11 @@ void listen()
         continue;
       if(a != '\r' && a != '\n' && (a < 32))
         continue;
-      msg[i] = a ;
+      if (i<max_length) msg[i] = a ;
+      
       i++;
     }
-    msg[i] = '\0';
+    set_end_mark(i);
     String msgString((char*)msg);
     if (msgString == "received") msg[0]= '\0';
     else publishMsg((char*)msg);
@@ -88,10 +89,14 @@ void callback(char* topic, byte* payload, unsigned int length) {
   for(i=0; i<length; i++) {
       if (i<max_length) msg[i] = (char)payload[i];
   }
-  if (max_length>length) msg[i] = '\0';
-  else  msg[max_length-1] = '\0';
-
+  set_end_mark(i);
 }
+
+void set_end_mark(int i){
+  if (max_length>i) msg[i] = '\0';
+  else  msg[max_length-1] = '\0';
+}
+
 
 void reconnect() {
   while (!MQTT.connected()) {
