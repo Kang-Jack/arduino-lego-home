@@ -1,6 +1,6 @@
-char* ssid = "Xiaomi_Kang_2_4G"; //Wi-Fi AP Name
-char* password = "1064928409"; //Wi-Fi Password
-char* mqtt_server = "192.168.31.143"; //MQTT Server IP
+char* ssid = "xxx"; //Wi-Fi AP Name
+char* password = "xxx"; //Wi-Fi Password
+char* mqtt_server = "192.168.xx.xxx"; //MQTT Server IP
 char* mqtt_name = "LegoMotionSensor"; //MQTT device name
 char* mqtt_topic = "lego/motion"; //MQTT topic for communication
 char* mqtt_ending = "/data"; //MQTT subsection for communication
