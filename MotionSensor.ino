@@ -1,10 +1,11 @@
-char* ssid = "xxx"; //Wi-Fi AP Name
-char* password = "xxx"; //Wi-Fi Password
-char* mqtt_server = "192.168.xx.xx"; //MQTT Server IP
+char* ssid = "Xiaomi_Kang_2_4G"; //Wi-Fi AP Name
+char* password = "1064928409"; //Wi-Fi Password
+char* mqtt_server = "192.168.31.143"; //MQTT Server IP
 char* mqtt_name = "LegoMotionSensor"; //MQTT device name
 char* mqtt_topic = "lego/motion"; //MQTT topic for communication
 char* mqtt_ending = "/data"; //MQTT subsection for communication
 int pirPin = 2;  //set the GPIO which you will connect the PIR sensor
+int zeroPin = 0;
 bool lowPower = false; //set to true if you want low power use, slower alerts but more battery
 int delayTime = 2000; //ONLY FOR LOW POWER - how long motion detected should be active
 
@@ -26,12 +27,16 @@ char* mqtt_maintopic = mqtt_topic;
 void setup() {
   strcat(mqtt_maintopic, mqtt_subtopic);
   pinMode(pirPin, INPUT);
-  Serial.begin(9600);
+  pinMode(zeroPin,OUTPUT);
+  Serial.begin(115200);
 }
 
 void loop() {
   if (!lowPower && WiFi.status() != WL_CONNECTED) startWiFi();
     Serial.println(digitalRead(pirPin));
+  //if (!MQTT.connected()) reconnect();
+  //MQTT.publish(mqtt_topic, "TRUE");
+
   if ((digitalRead(pirPin)) == 0) 
   { 
     if (MQTT.connected() && pir == 0)
@@ -41,14 +46,17 @@ void loop() {
       pir = 1;
     }
     delay(250);
+    digitalWrite(zeroPin,LOW);
   }
   else {
     if (WiFi.status() != WL_CONNECTED) startWiFi();
     MQTT.loop();
     if (!MQTT.connected()) reconnect();
-    MQTT.publish(mqtt_topic, "TRUE");
+    //MQTT.publish(mqtt_topic, "TRUE");
     //Serial.println("Message Published: TRUE");
     while (digitalRead(pirPin) == 1) {
+       digitalWrite(zeroPin,HIGH);
+       delay(5000);
       if (!MQTT.connected()) reconnect();
       MQTT.publish(mqtt_topic, "TRUE");
       //Serial.println("Message Published: TRUE");
