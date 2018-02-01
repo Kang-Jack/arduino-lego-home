@@ -19,10 +19,11 @@ long lastMsg = 0;
 char msg[50];
 int value = 0;
 int pir = 1;
+boolean isRemoteOn=false;
 
 char* mqtt_subtopic = "/data"; //MQTT topic for communication
 char* mqtt_maintopic = mqtt_topic;
-//char* mqtt_sub = "home/command/lego/nano";
+char* mqtt_sub = "home/command/lego/nano";
 
 void setup() {
   strcat(mqtt_maintopic, mqtt_subtopic);
@@ -36,7 +37,8 @@ void loop() {
     Serial.println(digitalRead(pirPin));
   //if (!MQTT.connected()) reconnect();
   //MQTT.publish(mqtt_topic, "TRUE");
-
+  if (isRemoteOn ==true)digitalWrite(zeroPin,HIGH);
+  
   if ((digitalRead(pirPin)) == 0) 
   { 
     if (MQTT.connected() && pir == 0)
@@ -46,7 +48,7 @@ void loop() {
       pir = 1;
     }
     delay(250);
-    digitalWrite(zeroPin,LOW);
+    if (isRemoteOn==false)digitalWrite(zeroPin,LOW);
   }
   else {
     if (WiFi.status() != WL_CONNECTED) startWiFi();
@@ -55,8 +57,10 @@ void loop() {
     //MQTT.publish(mqtt_topic, "TRUE");
     //Serial.println("Message Published: TRUE");
     while (digitalRead(pirPin) == 1) {
-       digitalWrite(zeroPin,HIGH);
-       delay(5000);
+      if (isRemoteOn==false){
+         digitalWrite(zeroPin,HIGH);
+         delay(5000);
+      }
       if (!MQTT.connected()) reconnect();
       MQTT.publish(mqtt_topic, "TRUE");
       //Serial.println("Message Published: TRUE");
@@ -81,17 +85,27 @@ void loop() {
 void callback(char* topic, byte* payload, unsigned int length) {
   //Serial.print("Message arrived [");
   Serial.print(topic);
-  //Serial.print("] ");
-  //for (int i = 0; i < length; i++) {
-  //  Serial.print((char)payload[i]);
-  //}
-  //Serial.println();
+  int i=0;
+  for(i=0; i<length; i++) {
+      if (i<50) msg[i] = (char)payload[i];
+  }
+  if (i<50) msg[i] = '\0';
+  else  msg[49] = '\0';
+  if (msg[0]=='o'||msg[0]=='c')
+  {
+    String msgString((char*)msg); 
+    if (msgString == "open") isRemoteOn=true; 
+    if (msgString == "close") isRemoteOn=false; 
+  }
 }
 
 void reconnect() {
   while (!MQTT.connected()) {
     //Serial.print("Attempting MQTT connection...");
     if (MQTT.connect(mqtt_name)) {
+      MQTT.publish(mqtt_topic,"hello-motion1");
+      // ... and resubscribe
+      MQTT.subscribe(mqtt_sub);
       //Serial.println("connected");
     } else {
       //Serial.print("failed, rc=");
