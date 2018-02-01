@@ -1,6 +1,6 @@
 char* ssid = "xxx"; //Wi-Fi AP Name
 char* password = "xxx"; //Wi-Fi Password
-char* mqtt_server = "192.168.xx.xxx"; //MQTT Server IP
+char* mqtt_server = "192.168.xxx.xx"; //MQTT Server IP
 char* mqtt_name = "LegoMotionSensor"; //MQTT device name
 char* mqtt_topic = "lego/motion"; //MQTT topic for communication
 char* mqtt_ending = "/data"; //MQTT subsection for communication
@@ -19,61 +19,71 @@ long lastMsg = 0;
 char msg[50];
 int value = 0;
 int pir = 1;
-boolean isRemoteOn=false;
+boolean isRemoteOn;
 
 char* mqtt_subtopic = "/data"; //MQTT topic for communication
 char* mqtt_maintopic = mqtt_topic;
-char* mqtt_sub = "home/command/lego/nano";
+char* mqtt_sub = "home/command/lego/nano/motion";
 
 void setup() {
   strcat(mqtt_maintopic, mqtt_subtopic);
   pinMode(pirPin, INPUT);
   pinMode(zeroPin,OUTPUT);
   Serial.begin(115200);
+  isRemoteOn=false;
 }
 
 void loop() {
   if (!lowPower && WiFi.status() != WL_CONNECTED) startWiFi();
-    Serial.println(digitalRead(pirPin));
-  //if (!MQTT.connected()) reconnect();
-  //MQTT.publish(mqtt_topic, "TRUE");
-  if (isRemoteOn ==true)digitalWrite(zeroPin,HIGH);
-  
+    //Serial.println(digitalRead(pirPin));
+  if (isRemoteOn ==true)
+  {
+    //if (!MQTT.connected()) reconnect();
+    //MQTT.publish(mqtt_topic, "remote high");
+    digitalWrite(zeroPin,HIGH);
+  }
+  if (digitalRead(pirPin) == 0 & isRemoteOn ==false) {
+    //if (!MQTT.connected()) reconnect();
+    //MQTT.publish(mqtt_topic, "remote low");
+    digitalWrite(zeroPin,LOW);
+  }
+
   if ((digitalRead(pirPin)) == 0) 
   { 
     if (MQTT.connected() && pir == 0)
     {
       MQTT.publish(mqtt_topic, "FALSE");
-      //Serial.println("Message Published: FALSE");
+      Serial.println("Message Published: FALSE");
       pir = 1;
     }
     delay(250);
-    if (isRemoteOn==false)digitalWrite(zeroPin,LOW);
   }
   else {
     if (WiFi.status() != WL_CONNECTED) startWiFi();
     MQTT.loop();
     if (!MQTT.connected()) reconnect();
-    //MQTT.publish(mqtt_topic, "TRUE");
-    //Serial.println("Message Published: TRUE");
+    MQTT.publish(mqtt_topic, "TRUE");
+    Serial.println("Message Published: TRUE");
     while (digitalRead(pirPin) == 1) {
       if (isRemoteOn==false){
          digitalWrite(zeroPin,HIGH);
+         MQTT.loop();
          delay(5000);
       }
       if (!MQTT.connected()) reconnect();
       MQTT.publish(mqtt_topic, "TRUE");
-      //Serial.println("Message Published: TRUE");
+      Serial.println("Message Published1: TRUE");
       delay(200);
     }
     pir = 0;
     if (!MQTT.connected()) reconnect();
     if (lowPower) delay(delayTime);
     MQTT.publish(mqtt_topic, "FALSE");
-    //Serial.println("Message Published: FALSE");
-    MQTT.loop();
-    delay(500);
+    Serial.println("Message Published: FALSE");
   }
+  if (!MQTT.connected()) reconnect();
+  MQTT.loop();
+  delay(200);
   if (lowPower) {
     WiFi.disconnect();
     WiFi.mode(WIFI_OFF);
@@ -83,7 +93,6 @@ void loop() {
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  //Serial.print("Message arrived [");
   Serial.print(topic);
   int i=0;
   for(i=0; i<length; i++) {
@@ -101,16 +110,17 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 void reconnect() {
   while (!MQTT.connected()) {
-    //Serial.print("Attempting MQTT connection...");
+    Serial.print("Attempting MQTT connection...");
     if (MQTT.connect(mqtt_name)) {
       MQTT.publish(mqtt_topic,"hello-motion1");
+      delay(200);
       // ... and resubscribe
       MQTT.subscribe(mqtt_sub);
-      //Serial.println("connected");
+      Serial.println("connected");
     } else {
-      //Serial.print("failed, rc=");
-      //Serial.print(MQTT.state());
-      //Serial.println(" try again in 5 seconds");
+      Serial.print("failed, rc=");
+      Serial.print(MQTT.state());
+      Serial.println(" try again in 5 seconds");
       for (int i = 0; i < 5000; i++) {
         delay(1);
       }
