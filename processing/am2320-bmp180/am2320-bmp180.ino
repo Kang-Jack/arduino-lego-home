@@ -1,4 +1,3 @@
-#include <Wire.h>
 #include <AM2320.h>
 #include <Adafruit_BMP085.h>
 
@@ -9,7 +8,7 @@ void setup()
 {
   Serial.begin(9600);
 
-   Wire.begin();
+   th.begin();
    
   //Wire.begin (4, 5);
   if (!bmp.begin()) 
@@ -22,7 +21,7 @@ void setup()
 void loop() 
 {
   get_bmp_data();
-  void get_th_data();
+  get_th_data();
 }
 
 void get_bmp_data(){
@@ -55,28 +54,26 @@ void get_bmp_data(){
     
  
   Serial.println();
-  delay(5000);
+  delay(1000);
 }
+
 void get_th_data(){
-    Serial.println("Chip = AM2320");
-  switch(th.Read()) {
-    case 2:
-      Serial.println("  CRC failed");
-      break;
-    case 1:
-      Serial.println("  Sensor offline");
-      break;
-    case 0:
-      Serial.print("  Humidity = ");
-      Serial.print(th.Humidity);
-      Serial.println("%");
-      Serial.print("  Temperature = ");
-      Serial.print(th.cTemp);
-      Serial.println("*C");
-      Serial.println();
-      break;
+    if (th.measure()) {
+    Serial.print("Temperature: ");
+    Serial.println(th.getTemperature());
+    Serial.print("Humidity: ");
+    Serial.println(th.getHumidity());
   }
-  delay(2000);
+  else {  // error has occured
+    int errorCode = th.getErrorCode();
+    switch (errorCode) {
+      case 1: Serial.println("ERR: Sensor is offline"); break;
+      case 2: Serial.println("ERR: CRC validation failed."); break;
+    }    
+  }
+
+  delay(1000);
   
 }
+
 
