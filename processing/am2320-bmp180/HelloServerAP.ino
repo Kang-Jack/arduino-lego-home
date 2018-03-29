@@ -45,7 +45,9 @@ void setup(void){
     while (1) {}
   }
   
-  WiFi.mode(WIFI_AP_STA);
+  WiFi.disconnect(true);
+  delay(500);
+  WiFi.mode(WIFI_AP);
   WiFi.softAP( ACCESS_POINT_NAME , ACCESS_POINT_PASSWORD);
   //WiFi.begin(ssid, password);
   Serial.println("");
