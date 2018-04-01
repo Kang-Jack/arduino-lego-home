@@ -8,29 +8,25 @@
 AM2320 th;
 Adafruit_BMP085 bmp;
 
-#define ACCESS_POINT_NAME  "ESP12FWeather"
-#define ACCESS_POINT_PASSWORD  "12345678"
 //const char* ssid = "........";
 //const char* password = "........";
 
-ESP8266WebServer server(80);
+//ESP8266WebServer server(80);
+#include "FS.h"
+#include <ArduinoJson.h>
+#include <Ticker.h>
 
+#include "datad.h"
+#include "helpers.h"
+#include "WebGlobal.h"
 
 #include "Page_Admin.h"
 #include "Page_Script.js.h"
 #include "Page_Style.css.h"
 
-struct weatherData {
-  float bmpTemp;
-  int32_t bmpPres;
-  int32_t bmpSealevelPres;
-  float bmpAlti; // std atmosphere
-  float bmpRealAlti; // std atmosphere
-  float am2320Temp;
-  float am2320Humi;
-  String am2320Err;
-}   weatherData;
 
+#include "PAGE_NetworkConfiguration.h"
+#include "Page_Information.h"
 #include "Page_AM2320Information.h"
 #include "Page_BMPInformation.h"
 
@@ -81,6 +77,18 @@ void handleNotFound(){
 void setup(void){
 
   Serial.begin(115200);
+  if (!SPIFFS.begin()) {
+    Serial.println("Failed to mount file system");
+    return;
+  }
+
+  delay(500);
+  Serial.println("Starting ESP12F2");
+  ReadConfig();
+  Serial.println("config fetched"); 
+
+
+
   th.begin();
   if (!bmp.begin()) 
   {
@@ -88,10 +96,11 @@ void setup(void){
     while (1) {}
   }
 
-  WiFi.disconnect(true);
-  delay(500);
-  WiFi.mode(WIFI_AP);
-  WiFi.softAP( ACCESS_POINT_NAME , ACCESS_POINT_PASSWORD);
+  ConfigureWifi();
+  //WiFi.disconnect(true);
+  //delay(500);
+  //WiFi.mode(WIFI_AP);
+  //WiFi.softAP( ACCESS_POINT_NAME , ACCESS_POINT_PASSWORD);
   //WiFi.begin(ssid, password);
   //Serial.println("");
 
@@ -116,6 +125,16 @@ void setup(void){
   server.on ( "/microajax.js", []() { Serial.println("microajax.js"); server.send ( 200, "text/plain", PAGE_microajax_js );  } );
   server.on ( "/favicon.ico",   []() { Serial.println("favicon.ico"); server.send ( 200, "text/html", "" );   }  );
   
+  server.on ( "/info.html", []() { Serial.println("info.html"); server.send ( 200, "text/html", PAGE_Information );   }  );
+
+  server.on ( "/config.html", send_network_configuration_html );
+
+  server.on ( "/values", send_network_configuration_values_html );
+
+  server.on ( "/connectionstate", send_connection_state_values_html );
+
+  server.on ( "/infovalues", send_information_values_html );
+
   server.on("/bmp.html",[](){
     readBMP();
     //strBMP();

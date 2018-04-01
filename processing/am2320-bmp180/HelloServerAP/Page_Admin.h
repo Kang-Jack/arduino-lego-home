@@ -12,6 +12,8 @@ Hello from ESP12FWeather!
 <hr>
 <a href="bmp.html" style="width:250px" class="btn btn--m btn--blue" >BMP Sensor</a><br>
 <a href="th.html" style="width:250px" class="btn btn--m btn--blue" >AM2320 Sensor</a><br>
+<a href="info.html" style="width:250px" class="btn btn--m btn--blue" >Network Information</a><br>
+<a href="config.html" style="width:250px" class="btn btn--m btn--blue" >Network Configuration</a><br>
 <script>
 window.onload = function ()
 {
