@@ -9,7 +9,7 @@ SSD1306  display(0x3c, pinSDA, pinSCL);
 #include <Adafruit_MLX90614.h>
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 
-const int buttonPin = 11;    // the number of the pushbutton pin
+const int buttonPin = 14;    // the number of the pushbutton pin
 
 void init_oled() {
   display.init();
@@ -88,21 +88,25 @@ void setup(void){
     while (1) {}
   }
 
-  //pinMode(buttonPin, INPUT);
+  pinMode(buttonPin, INPUT);
   Serial.println("start");
   new_screen_oled(0,0,"Starting ESP12F2");
 
 }
 
   void loop(void){
-    //int reading = digitalRead(buttonPin);
-    //if(reading==HIGH)
-    //{
+    int reading = digitalRead(buttonPin);
+    Serial.println(reading); 
+    if(reading==LOW)
+    {
        //new_screen_oled(0,0," button pushed");
         display_object_temp();
         display_ambient_temp(); 
         display_F_temp();
         Serial.println("===================="); 
-   // }
-    //new_screen_oled(0,0,"No button pushed");
+    }
+    else
+    {
+      new_screen_oled(0,0,"No button pushed");
+    }
 }
