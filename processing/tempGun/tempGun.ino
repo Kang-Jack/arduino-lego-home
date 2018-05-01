@@ -17,6 +17,8 @@ Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 
 const int buttonPin = 14;    // the number of the pushbutton pin
 
+const int delayTime = 2000; 
+bool isProMode = false;
 
 void init_oled() {
   display.init();
@@ -59,7 +61,7 @@ void display_F_temp(){
     display.println( mlx.readAmbientTempF());
     display.drawLogBuffer(0, 0);
     display.display();
-    delay(2000);
+    delay(delayTime);
 
 }
 
@@ -70,7 +72,7 @@ void display_object_temp(){
     set_b_text();
     display.drawString(0,22,String(mlx.readObjectTempC()));
     display.display();
-    delay(2000);
+    delay(delayTime);
 }
 
 void display_ambient_temp(){
@@ -80,7 +82,7 @@ void display_ambient_temp(){
     set_b_text();
     display.drawString(0,22, String(mlx.readAmbientTempC()));
     display.display();
-    delay(2000);
+    delay(delayTime);
 }
 
 void display_bme_temp() {
@@ -91,7 +93,7 @@ void display_bme_temp() {
     set_b_text();
     display.drawString(0,22, String(bmp.readTemperature()));
     display.display();
-    delay(2000);
+    delay(1000);
 }
 
 void display_bme_Pressure() {
@@ -102,7 +104,7 @@ void display_bme_Pressure() {
     set_b_text();
     display.drawString(0,22, String(bmp.readPressure() / 100.0F));
     display.display();
-    delay(2000);
+    delay(1000);
 }
 
 void display_bme_Altitude() {
@@ -112,7 +114,7 @@ void display_bme_Altitude() {
     set_b_text();
     display.drawString(0,22, String(bmp.readAltitude(SEALEVELPRESSURE_HPA)));
     display.display();
-    delay(2000);
+    delay(delayTime);
 }
 
 void setup(void){
@@ -128,9 +130,8 @@ void setup(void){
     new_screen_oled(0,0,"Not find MLX90614");
     while (1) {}
   }
-
-  bool status;
   
+  bool status;
   // default settings
   // (you can also pass in a Wire library object like &Wire2)
   status = bmp.begin();  
@@ -142,27 +143,63 @@ void setup(void){
 
   pinMode(buttonPin, INPUT);
   Serial.println("start");
+  set_m_text();
   new_screen_oled(0,0,"Starting ESP12S");
-
+  
+  int readMode = digitalRead(buttonPin);
+  for (int i=0;i<5;i++){
+    if (readMode==LOW){
+      isProMode=true;
+      set_m_text();
+      new_screen_oled(0,0,"Pro. Mode");
+      continue;
+    }
+    else{
+      set_m_text();
+        new_screen_oled(0,0,"Simple Mode");
+        delay(500); 
+        set_s_text();
+        new_screen_oled(0,28,"Push button for Pro. mode");
+        delay(500);   
+        readMode = digitalRead(buttonPin);
+      }
+  }    
 }
 
 void loop(void){
   int reading = digitalRead(buttonPin);
-  if(reading==LOW)
-  {
+  if(isProMode){
+    if(reading==LOW)
+    {
+        set_m_text();
+        new_screen_oled(0,0," button pushed");
+        display_object_temp();
+        display_ambient_temp(); 
+        display_F_temp();
+    }
+    else
+    {
       set_m_text();
-      new_screen_oled(0,0," button pushed");
-      display_object_temp();
-      display_ambient_temp(); 
-      display_F_temp();
-      Serial.println("===================="); 
+      new_screen_oled(0,0," no button pushed");
+      display_bme_temp();
+      display_bme_Pressure();
+      display_bme_Altitude();
+    }
   }
-  else
-  {
-    set_m_text();
-    new_screen_oled(0,0," no button pushed");
-    display_bme_temp();
-    display_bme_Pressure();
-    display_bme_Altitude();
+  else{
+    if(reading==LOW)
+    {
+        set_m_text();
+        new_screen_oled(0,0," button pushed");
+        display_object_temp();
+    }
+    else
+    {
+      set_m_text();
+      new_screen_oled(0,0," no button pushed");
+      display_bme_temp();
+      display_bme_Pressure();
+    }
   }
 }
+
